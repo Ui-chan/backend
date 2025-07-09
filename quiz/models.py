@@ -9,7 +9,7 @@ class Quiz(models.Model):
     answer_list = models.JSONField(blank=True, null=True)
     selected = models.CharField(max_length=255, blank=True, null=True)
     is_correct = models.CharField(max_length=10, blank=True, null=True)
-
+    duration_seconds = models.FloatField(blank=True, null=True) 
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
