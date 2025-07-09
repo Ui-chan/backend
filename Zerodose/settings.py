@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'storages',
     'rest_framework',
     'corsheaders',
-    
+    'data',
 ]
 
 # --- AWS S3 설정 (파일 하단에 추가) ---
