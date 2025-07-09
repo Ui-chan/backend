@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,7 +40,23 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'quiz',
+    'storages',
+    'rest_framework',
+    'corsheaders',
+    
 ]
+
+# --- AWS S3 설정 (파일 하단에 추가) ---
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = 'iccas-quiz' # 1단계에서 만든 버킷 이름
+AWS_S3_REGION_NAME = 'ap-northeast-2' # 버킷 리전
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com'
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+AWS_DEFAULT_ACL = 'public-read' # 파일 업로드 시 기본 권한
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage' # 기본 저장소를 S3로 변경
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
