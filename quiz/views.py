@@ -178,12 +178,9 @@ def create_new_quiz_data(user_id):
     
     # DB에 퀴즈 저장
     new_quiz = Quiz.objects.create(
-        user_id=user_id,
         quiz_image=image_url,
         correct_answer=answer_ko,
         answer_list=options_ko,
-        selected="",
-        is_correct=""
     )
     print(f"--- [INFO] New Quiz created with ID: {new_quiz.quiz_id} for User ID: {user_id} ---")
     return new_quiz
