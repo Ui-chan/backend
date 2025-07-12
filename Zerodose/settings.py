@@ -59,6 +59,7 @@ AWS_DEFAULT_ACL = 'public-read' # 파일 업로드 시 기본 권한
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage' # 기본 저장소를 S3로 변경
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # ⇐ 최상단에 추가
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -151,3 +152,5 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CORS_ALLOW_ALL_ORIGINS = True
