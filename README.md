@@ -7,16 +7,7 @@
 
 ## ⚙️ 1. 환경 설정
 
-### 🟩 Conda 사용자
-
-```bash
-# Conda 환경 생성
-conda env create -f environment.yml
-
-# 환경 활성화
-conda activate env
-
-# 가상환경 생성
+# 가상환경 생성 
 python -m venv venv
 
 # 가상환경 활성화
