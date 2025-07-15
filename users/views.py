@@ -1,7 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import *
+from .models import User
+from .serializers import UserSignupSerializer, UserDetailSerializer
 
 class UserSignupView(APIView):
     def post(self, request):
@@ -10,7 +11,6 @@ class UserSignupView(APIView):
             user = serializer.save()
             return Response(UserSignupSerializer(user).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class UserDetailView(APIView):
     def post(self, request):
@@ -24,19 +24,19 @@ class UserDetailView(APIView):
 
         serializer = UserDetailSerializer(user)
         return Response(serializer.data)
-    
+
 class UserLoginView(APIView):
     def post(self, request):
         username = request.data.get('username')
-        age = request.data.get('age')
+        password = request.data.get('password')
 
-        if not username or age is None:
-            return Response({'error': 'username and age are required.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not username or not password:
+            return Response({'error': 'username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user = User.objects.get(username=username, age=age)
+            user = User.objects.get(username=username, password=password)
         except User.DoesNotExist:
-            return Response({'error': 'Invalid username or age.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'Invalid username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
 
         serializer = UserDetailSerializer(user)
         return Response({'message': 'Login successful', 'user': serializer.data}, status=status.HTTP_200_OK)
