@@ -9,4 +9,6 @@ urlpatterns = [
     path('quizzes/create/', QuizCreateView.as_view(), name='quiz-create'),
 
     path('cardgame/create/', CardGameCreateView.as_view()),
+
+    path('cardgame/save/', ThirdGameResultSaveView.as_view()),
 ]

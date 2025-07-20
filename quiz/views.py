@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from .models import Quiz
-from .serializers import QuizSerializer
+from .serializers import *
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -428,3 +428,21 @@ class CardGameCreateView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         finally:
             db.connections.close_all()
+
+
+class ThirdGameResultSaveView(APIView):
+    """
+    하나의 카드 게임 결과를 받아 DB에 저장하는 API
+    """
+    def post(self, request):
+        # request.data가 단일 객체이므로 many=True 옵션을 제거합니다.
+        serializer = ThirdGameResultSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {'message': '게임 결과가 성공적으로 저장되었습니다.'},
+                status=status.HTTP_201_CREATED
+            )
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
