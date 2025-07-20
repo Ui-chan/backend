@@ -11,10 +11,36 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import environ  # ⇐ 추가
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# ==============================================================================
+# django-environ 설정 시작 (추가된 부분)
+# ==============================================================================
+env = environ.Env(
+    # 기본값 및 타입 캐스팅 설정
+    DEBUG=(bool, False)
+)
+
+# .env 파일의 경로를 지정하고 읽어들임
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+# ==============================================================================
+# django-environ 설정 끝 (추가된 부분)
+# ==============================================================================
+
+
+# --- 여기가 핵심 ---
+# .env 파일에서 GOOGLE_APPLICATION_CREDENTIALS 변수 값을 읽어서,
+# Django 애플리케이션이 실행되는 동안 사용할 환경 변수로 설정합니다.
+# 이렇게 하면 시스템 전체에 환경 변수를 설정할 필요가 없습니다.
+if 'GOOGLE_APPLICATION_CREDENTIALS' in os.environ:
+    pass # 시스템 환경변수가 있다면 그대로 사용
+elif env('GOOGLE_APPLICATION_CREDENTIALS', default=None):
+    # .env 파일에서 읽은 값을 시스템 환경변수처럼 설정
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = env('GOOGLE_APPLICATION_CREDENTIALS')
 
 
 # Quick-start development settings - unsuitable for production
