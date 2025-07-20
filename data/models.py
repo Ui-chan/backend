@@ -4,6 +4,7 @@ from django.utils import timezone
 class QuizResult(models.Model):
     result_id = models.AutoField(primary_key=True)
     user_id = models.IntegerField()
+    quiz_type = models.IntegerField(blank=True, null=True)  # 3번째 필드로 추가됨
     quiz_id = models.IntegerField()
     selected = models.CharField(max_length=255, blank=True, null=True)
     is_correct = models.BooleanField(blank=True, null=True)
