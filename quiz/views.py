@@ -20,6 +20,7 @@ import boto3
 import base64
 import uuid
 import traceback
+import re
 from dotenv import load_dotenv
 
 import concurrent.futures
@@ -226,7 +227,7 @@ def _generate_story_for_emotion(emotion_en, emotion_ko):
         print(f"이야기 생성 또는 파싱 실패 (감정: {emotion_en}): {e}\nRaw Text: {raw_text}")
         return None
 
-"""[단계 카드게임용 함수] 이야기 데이터로 이미지를 생성하고 DB에 퀴즈를 저장하는 함수 (지수 백오프 적용)"""
+"""[3단계 카드게임용 함수] 이야기 데이터로 이미지를 생성하고 DB에 퀴즈를 저장하는 함수 (지수 백오프 적용)"""
 def _create_image_and_quiz(user_id, story_data):
     
     if not story_data:
@@ -363,7 +364,6 @@ def create_quiz_pair(user_id, emotion_tuple):
 
     finally:
         db.connection.close()
-
 
 # ==============================================================================
 #  API 뷰(Views)
