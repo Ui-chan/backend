@@ -10,7 +10,7 @@ class UserSignupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['user_id', 'username', 'password', 'age']
+        fields = '__all__'
         read_only_fields = ['user_id']
 
     def validate_username(self, value):
@@ -29,4 +29,4 @@ class UserSignupSerializer(serializers.ModelSerializer):
 class UserDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['user_id', 'username', 'age', 'point', 'created_at']
+        fields = '__all__'
