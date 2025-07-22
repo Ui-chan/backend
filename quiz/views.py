@@ -56,6 +56,9 @@ def create_new_quiz_data(user_id):
     for attempt in range(3):
         print(f"--- [INFO] Quiz generation attempt {attempt + 1}/3 for user_id: {user_id} ---")
         emotion_map = { "Happiness": "기쁨", "Sadness": "슬픔", "Anger": "화남", "Surprise": "놀람" }
+        # ▼▼▼ 1. 고정된 보기 리스트를 미리 정의합니다. ▼▼▼
+        fixed_options_ko = list(emotion_map.values())
+        
         chosen_emotion_en = random.choice(list(emotion_map.keys()))
         chosen_emotion_ko = emotion_map[chosen_emotion_en]
         
@@ -66,7 +69,7 @@ def create_new_quiz_data(user_id):
             "Surprise": "The story must be about **at least two cute animal characters** and describe **both** of their **mouths forming a perfect 'O' shape** in astonishment when they see the key object."
         }
 
-        # 2. Gemini 프롬프트 최종 생성 - "두 마리 이상의 동물" 조건을 명확히 전달
+        # ▼▼▼ 2. Gemini 프롬프트에서 'options_ko' 생성 요청을 제거합니다. ▼▼▼
         prompt_text = f"""
         You are a creative storyteller for a children's therapeutic app.
         Your task is to create a JSON object for a story about the emotion: **{chosen_emotion_en}**.
@@ -81,10 +84,8 @@ def create_new_quiz_data(user_id):
         3. "characters": A list of descriptions for all THREE characters in the story.
         4. "key_object": A key object from the story.
         5. "answer_ko": This must be exactly "{chosen_emotion_ko}".
-        6. "options_ko": A list of 4 Korean emotion words, including "{chosen_emotion_ko}".
         """
         
-
         response = text_model.generate_content([{"role": "user", "parts": [prompt_text]}])
         raw_text = response.text.strip()
         try:
@@ -99,9 +100,11 @@ def create_new_quiz_data(user_id):
         answer_en = quiz_data.get('answer_en')
         characters = quiz_data.get('characters')
         key_object = quiz_data.get('key_object')
-        options_ko = quiz_data.get('options_ko')
+        # ▼▼▼ 3. 'options_ko'를 AI 응답에서 가져오지 않습니다. ▼▼▼
+        # options_ko = quiz_data.get('options_ko') 
         answer_ko = quiz_data.get('answer_ko')
-        if not all([story_text, answer_en, characters, key_object, options_ko, answer_ko]):
+        # if not all([..., options_ko, ...]): # 유효성 검사에서도 제거
+        if not all([story_text, answer_en, characters, key_object, answer_ko]):
             raise Exception(f"유효한 퀴즈 데이터를 받지 못했습니다: {quiz_data}")
 
         characters = quiz_data.get('characters')
@@ -181,11 +184,12 @@ def create_new_quiz_data(user_id):
     s3_client.put_object(Bucket=S3_BUCKET_NAME, Key=image_filename, Body=image_data, ContentType='image/png')
     image_url = f"https://{S3_BUCKET_NAME}.s3.{S3_REGION}.amazonaws.com/{image_filename}"
     
-    # DB에 퀴즈 저장
+    random.shuffle(fixed_options_ko)
+    
     new_quiz = Quiz.objects.create(
         quiz_image=image_url,
         correct_answer=answer_ko,
-        answer_list=options_ko,
+        answer_list=fixed_options_ko, # 고정된 보기 리스트 사용
     )
     print(f"--- [INFO] New Quiz created with ID: {new_quiz.quiz_id} for User ID: {user_id} ---")
     return new_quiz
@@ -445,4 +449,19 @@ class ThirdGameResultSaveView(APIView):
                 status=status.HTTP_201_CREATED
             )
         
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FirstGameResultSaveView(APIView):
+    """
+    1단계 게임(감정 퀴즈)의 결과를 받아 DB에 저장하는 API
+    """
+    def post(self, request):
+        serializer = FirstGameResultSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {'message': '게임 결과가 성공적으로 저장되었습니다.'},
+                status=status.HTTP_201_CREATED
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -34,3 +34,18 @@ class ThirdGameResultSerializer(serializers.ModelSerializer):
         # 데이터 생성 시, quiz_type을 3 (카드 게임)으로 고정합니다.
         validated_data['quiz_type'] = 3
         return QuizResult.objects.create(**validated_data)
+    
+
+class FirstGameResultSerializer(serializers.ModelSerializer):
+    """
+    1단계 게임(감정 퀴즈) 결과 저장을 위한 Serializer
+    """
+    class Meta:
+        model = QuizResult
+        # 프론트엔드에서 직접 받을 필드들을 명시합니다.
+        fields = ['user_id', 'quiz_id', 'selected', 'is_correct', 'duration_seconds', 'emotion']
+
+    def create(self, validated_data):
+        # 1단계 게임이므로 quiz_type을 1로 고정하여 저장합니다.
+        validated_data['quiz_type'] = 1
+        return QuizResult.objects.create(**validated_data)

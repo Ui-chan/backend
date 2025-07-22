@@ -71,3 +71,9 @@ class UpdateBaseSerializer(serializers.Serializer):
         data['is_background'] = (item_name in store_backgrounds)
 
         return data
+    
+class UserIdSerializer(serializers.Serializer):
+    """
+    user_id를 입력받기 위한 간단한 시리얼라이저
+    """
+    user_id = serializers.IntegerField(required=True)
