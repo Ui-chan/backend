@@ -11,8 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-import environ  # ⇐ 추가
 import os
+import environ  # ⇐ 추가
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'data',
+    'item',
 ]
 
 # --- AWS S3 설정 (파일 하단에 추가) ---
