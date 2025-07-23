@@ -49,3 +49,20 @@ class FirstGameResultSerializer(serializers.ModelSerializer):
         # 1단계 게임이므로 quiz_type을 1로 고정하여 저장합니다.
         validated_data['quiz_type'] = 1
         return QuizResult.objects.create(**validated_data)
+    
+
+class SecondGameResultSerializer(serializers.ModelSerializer):
+    """
+    2단계 게임(사회성 퀴즈) 결과 저장을 위한 Serializer
+    """
+    theme = serializers.CharField(max_length=255, source='situation')
+
+    class Meta:
+        model = QuizResult
+        # 'selected'를 필드 목록에서 제거하고, is_correct는 1 또는 0으로 받습니다.
+        fields = ['user_id', 'is_correct', 'duration_seconds', 'theme']
+
+    def create(self, validated_data):
+        # 2단계 게임이므로 quiz_type을 2로 고정하여 저장합니다.
+        validated_data['quiz_type'] = 2
+        return QuizResult.objects.create(**validated_data)
