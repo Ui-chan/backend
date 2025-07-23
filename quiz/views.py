@@ -369,6 +369,50 @@ def create_quiz_pair(user_id, emotion_tuple):
     finally:
         db.connection.close()
 
+""" [2단계 게임용 함수] 주어진 테마에 대해 S3에서 이미지를 무작위로 선택하여 퀴즈 하나를 생성합니다. """
+def create_second_game_quiz(theme):
+    # ▼▼▼ 함수 내부에서 S3 클라이언트 생성 ▼▼▼
+    s3_client = boto3.client(
+        's3',
+        aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+        region_name=S3_REGION
+    )
+    base_prefix = f"social_quiz/{theme}/"
+    image_urls = {}
+
+    for folder_type in ["correct", "incorrect", "situation"]:
+        try:
+            prefix = f"{base_prefix}{folder_type}/"
+            response = s3_client.list_objects_v2(Bucket=S3_BUCKET_NAME, Prefix=prefix)
+            
+            all_files = response.get('Contents', [])
+            image_files = [
+                obj['Key'] for obj in all_files 
+                if obj['Key'] != prefix and (obj['Key'].lower().endswith(('.png', '.jpg', '.jpeg')))
+            ]
+
+            if not image_files:
+                raise Exception(f"S3 폴더에 이미지가 없습니다: {prefix}")
+
+            random_image_key = random.choice(image_files)
+            image_url = f"https://{S3_BUCKET_NAME}.s3.{S3_REGION}.amazonaws.com/{random_image_key}"
+            image_urls[folder_type] = image_url
+
+        except Exception as e:
+            print(f"S3에서 이미지를 가져오는 중 에러 발생 (Theme: {theme}, Type: {folder_type}): {e}")
+            return None
+
+    options = [image_urls['correct'], image_urls['incorrect']]
+    random.shuffle(options)
+
+    return {
+        "theme": theme,
+        "situation_image": image_urls['situation'],
+        "options": options,
+        "correct_answer": image_urls['correct']
+    }
+
 # ==============================================================================
 #  API 뷰(Views)
 # ==============================================================================
@@ -465,3 +509,47 @@ class FirstGameResultSaveView(APIView):
                 status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class SecondGameCreateView(APIView):
+    """ POST: [2단계 사회성 퀴즈 게임] 5개의 무작위 퀴즈를 생성합니다. """
+    def post(self, request):
+        user_id = request.data.get('user_id')
+        if user_id is None:
+            return Response({'error': 'user_id가 필요합니다.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            all_themes = [
+                "blocks_knocked_over", "clean_up_after_play", "help_carry_items",
+                "quiet_in_library", "react_to_accident", "respond_to_greeting",
+                "say_sorry", "share_toy", "swing_turn", "thank_you"
+            ]
+            selected_themes = random.sample(all_themes, 5)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+                # create_second_game_quiz 함수는 이미 내부에 s3_client 초기화 코드를 포함하고 있습니다.
+                results = executor.map(create_second_game_quiz, selected_themes)
+                new_quizzes = [q for q in results if q is not None]
+            if len(new_quizzes) != 5:
+                return Response({'error': '일부 퀴즈 생성에 실패했습니다. S3 폴더 구조나 파일 존재 여부를 확인해주세요.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            response_data = {
+                'user_id': user_id,
+                'quizzes': new_quizzes
+            }
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print(traceback.format_exc())
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class SecondGameResultSaveView(APIView):
+    """
+    POST: [2단계 사회성 퀴즈 게임]의 개별 문제 결과를 받아 DB에 저장합니다.
+    """
+    def post(self, request):
+        serializer = SecondGameResultSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {'message': '게임 결과가 성공적으로 저장되었습니다.'},
+                status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
