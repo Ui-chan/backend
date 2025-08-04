@@ -23,16 +23,16 @@ class UserSignupSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        # 자동으로 기본 캐릭터 및 배경 값 세팅
-        validated_data['base_character_name'] = 'cat'
-        validated_data['base_character_img'] = 'https://iccas-zerodose.s3.ap-northeast-2.amazonaws.com/character/cat/cat_main.png'
-        validated_data['base_background_name'] = 'yard'
-        validated_data['base_background_img'] = [
-            "https://iccas-zerodose.s3.ap-northeast-2.amazonaws.com/background/yard/set/yard1.jpg",
-            "https://iccas-zerodose.s3.ap-northeast-2.amazonaws.com/background/yard/set/yard2.png",
-            "https://iccas-zerodose.s3.ap-northeast-2.amazonaws.com/background/yard/set/yard3.jpg"
-        ]
+        # --- 이 부분을 수정합니다 ---
+        # 회원가입 시 기본 캐릭터 이름과 이미지를 설정합니다.
+        validated_data['base_character_name'] = ['dog']
+        validated_data['base_character_img'] = ['https://iccas-zerodose.s3.ap-northeast-2.amazonaws.com/character/dog/dog_main.png']
 
+        validated_data['base_background_img'] = 'https://iccas-zerodose.s3.ap-northeast-2.amazonaws.com/background/farm/farm_main.png'
+        
+        validated_data['store_character'] = ['dog']
+        validated_data['store_background'] = ['farm']
+        # 기본 배경 이름은 User 모델에 설정된 default 값('yard')을 따릅니다.
         return User.objects.create(**validated_data)
 
 

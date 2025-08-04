@@ -1,17 +1,22 @@
 from django.db import models
 from django.utils import timezone
 
-class QuizResult(models.Model):
+class ChecklistResult(models.Model):
+    """
+    발달 체크리스트 결과 기록을 위한 모델
+    """
     result_id = models.AutoField(primary_key=True)
     user_id = models.IntegerField()
-    quiz_type = models.IntegerField(blank=True, null=True)  # optional
-    quiz_id = models.IntegerField(blank=True, null=True, default=0)  # null 허용 + 기본값 0
-    selected = models.CharField(max_length=255, blank=True, null=True)
-    is_correct = models.BooleanField(blank=True, null=True)
-    duration_seconds = models.FloatField(blank=True, null=True)
-    emotion = models.CharField(max_length=255, blank=True, null=True)
-    situation = models.CharField(max_length=255, blank=True, null=True)
-    created_at = models.DateTimeField(default=timezone.now)
+    total_score = models.IntegerField()
+    critical_item_score = models.IntegerField()
+    risk_level = models.CharField(max_length=50)
+    recommendation = models.TextField()
+    answers = models.JSONField() # 사용자의 답변 전체를 JSON으로 저장
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = 'quiz_result'
+        db_table = 'checklist_results'
+        ordering = ['-created_at'] # 최신 기록부터 정렬
+
+    def __str__(self):
+        return f"Result for User {self.user_id} on {self.created_at.strftime('%Y-%m-%d')}"

@@ -52,7 +52,7 @@ SECRET_KEY = 'django-insecure-g*@$y+6yrq7o1_x=mcgs8%i5(i*)&b9c2and5dk79@myro$=kv
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -65,12 +65,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'users',
-    'quiz',
     'storages',
     'rest_framework',
     'corsheaders',
     'data',
     'item',
+    'games',
 ]
 
 # --- AWS S3 설정 (파일 하단에 추가) ---
@@ -181,3 +181,4 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
+
