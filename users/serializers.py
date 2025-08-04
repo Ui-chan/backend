@@ -26,9 +26,9 @@ class UserSignupSerializer(serializers.ModelSerializer):
         # --- 이 부분을 수정합니다 ---
         # 회원가입 시 기본 캐릭터 이름과 이미지를 설정합니다.
         validated_data['base_character_name'] = ['dog']
-        validated_data['base_character_img'] = ['https://iccas-zerodose.s3.ap-northeast-2.amazonaws.com/character/dog/dog_main.png']
+        validated_data['base_character_img'] = ['https://iccas-zerodose.s3.ap-northeast-2.amazonaws.com/character/dog1/dog_main.png']
 
-        validated_data['base_background_img'] = 'https://iccas-zerodose.s3.ap-northeast-2.amazonaws.com/background/farm/farm_main.png'
+        validated_data['base_background_img'] = 'https://iccas-zerodose.s3.ap-northeast-2.amazonaws.com/background/farm/farm.jpg'
         
         validated_data['store_character'] = ['dog']
         validated_data['store_background'] = ['farm']
