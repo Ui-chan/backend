@@ -1,6 +1,12 @@
 from django.urls import path
-from .views import QuizResultCreateView
+from .views import *
 
 urlpatterns = [
-    path('quiz_result/', QuizResultCreateView.as_view(), name='quiz_result_create'),
+    path('checklist/save/', SaveChecklistResultView.as_view()),
+    
+    # 체크리스트 기록 조회 API: POST /api/data/checklist/history/
+    path('checklist/history/', GetChecklistHistoryView.as_view()),
+
+    path('user-stats/', ProcessedUserStatsView.as_view()),
+
 ]
