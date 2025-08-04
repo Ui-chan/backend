@@ -34,13 +34,17 @@ class UserLoginView(APIView):
         if not username or not password:
             return Response({'error': 'username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            user = User.objects.get(username=username, password=password)
-        except User.DoesNotExist:
+        # --- 이 부분을 수정합니다 ---
+        # .get() 대신 .filter().first()를 사용하여 중복이 있어도 첫 번째 객체를 가져옵니다.
+        user = User.objects.filter(username=username, password=password).first()
+
+        # user가 존재하지 않으면 None이 반환됩니다.
+        if user is None:
             return Response({'error': 'Invalid username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
 
         serializer = UserDetailSerializer(user)
         return Response({'message': 'Login successful', 'user': serializer.data}, status=status.HTTP_200_OK)
+
 
 class UserStampView(APIView):
     """
@@ -55,7 +59,8 @@ class UserStampView(APIView):
             user = User.objects.get(pk=user_id)
             total_points = user.point or 0
             
-            stamp_count = total_points 
+            
+            stamp_count = total_points
 
             return Response({
                 "user_id": user.user_id,
@@ -72,7 +77,6 @@ class UpdateEquippedItemsView(APIView):
     """
     def post(self, request, *args, **kwargs):
         user_id = request.data.get('user_id')
-        # character_names는 이제 이름의 리스트(배열)입니다. 예: ["cat", "rabbit"]
         character_names = request.data.get('character_names') 
         background_name = request.data.get('background_name')
 
@@ -85,19 +89,16 @@ class UpdateEquippedItemsView(APIView):
             return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
         # 캐릭터 업데이트 로직 (다중 선택 처리)
-        if character_names is not None: # 빈 리스트도 허용하기 위해 None인지 확인
+        if character_names is not None:
             owned_characters = user.store_character or []
-            # 사용자가 소유하지 않은 캐릭터를 선택했는지 확인
             for name in character_names:
                 if name not in owned_characters:
                     return Response({'error': f'User does not own the character: {name}.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # 아이템 테이블에서 해당 캐릭터들의 이미지 URL을 모두 가져옵니다.
             items = Item.objects.filter(item_name__in=character_names, item_type=1)
             if len(items) != len(character_names):
                 return Response({'error': 'One or more character items not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-            # 이름 리스트와 이미지 URL 리스트를 저장
             user.base_character_name = [item.item_name for item in items]
             user.base_character_img = [item.item_img for item in items]
 
@@ -107,6 +108,8 @@ class UpdateEquippedItemsView(APIView):
                 try:
                     item = Item.objects.get(item_name=background_name, item_type=2)
                     user.base_background_name = item.item_name
+                    # --- 이 부분을 수정합니다 ---
+                    # TextField에 이미지 URL 문자열을 직접 저장합니다.
                     user.base_background_img = item.item_img
                 except Item.DoesNotExist:
                     return Response({'error': 'Item not found in item list.'}, status=status.HTTP_404_NOT_FOUND)
