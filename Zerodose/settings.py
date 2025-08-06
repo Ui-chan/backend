@@ -42,6 +42,9 @@ elif env('GOOGLE_APPLICATION_CREDENTIALS', default=None):
     # .env 파일에서 읽은 값을 시스템 환경변수처럼 설정
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = env('GOOGLE_APPLICATION_CREDENTIALS')
 
+# settings.py
+GCP_PROJECT_ID = "gen-lang-client-0453288227"  # 본인의 GCP 프로젝트 ID로 교체
+GCP_LOCATION = "us-central1"           # 예: us-central1
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -182,3 +185,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0' # Redis 서버 주소
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Seoul'

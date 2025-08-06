@@ -5,6 +5,10 @@ from django.utils import timezone
 from django.db.models import Avg, Count, Sum, F, Case, When
 from django.db.models.functions import TruncDate
 from collections import defaultdict
+from google.cloud import vision
+import base64
+from .serializers import * # 새로 추가
+
 
 from games.models import GameSession, GameInteractionLog 
 from .models import ChecklistResult
@@ -135,3 +139,63 @@ class ComprehensiveStatsView(APIView):
         serializer = ComprehensiveStatsSerializer(data=processed_data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+class DetectEmotionView(APIView):
+    """
+    이미지, 목표 감정, 그리고 반응 시간을 받아 일치 여부를 분석하는 API
+    """
+    def post(self, request, *args, **kwargs):
+        # 이제 Serializer가 image, target_emotion, response_time_ms를 모두 검증합니다.
+        serializer = DetectEmotionSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        image_data = serializer.validated_data['image']
+        target_emotion = serializer.validated_data['target_emotion']
+        response_time_ms = serializer.validated_data['response_time_ms']
+        # response_time_ms 값도 validated_data에 포함되지만, 이 View의 핵심 로직(감정 분석)에는
+        # 사용되지 않으므로 따로 변수로 추출할 필요는 없습니다. 
+        # 만약 이 값을 DB에 저장하거나 다른 용도로 사용하려면 아래와 같이 추출할 수 있습니다.
+        # response_time_ms = serializer.validated_data['response_time_ms']
+            
+        header, encoded = image_data.split(",", 1)
+        image_content = base64.b64decode(encoded)
+
+        client = vision.ImageAnnotatorClient()
+        image = vision.Image(content=image_content)
+        response = client.face_detection(image=image)
+        face_annotations = response.face_annotations
+
+        if not face_annotations:
+            return Response({"error": "No face detected"}, status=status.HTTP_400_BAD_REQUEST)
+
+        likelihood_name = ('UNKNOWN', 'VERY_UNLIKELY', 'UNLIKELY', 'POSSIBLE', 'LIKELY', 'VERY_LIKELY')
+        emotions = face_annotations[0]
+        
+        target_likelihood_str = 'UNKNOWN'
+        is_match = False
+
+        if target_emotion == 'happy':
+            target_likelihood_str = likelihood_name[emotions.joy_likelihood]
+            is_match = target_likelihood_str in ['POSSIBLE', 'LIKELY', 'VERY_LIKELY']
+
+        elif target_emotion == 'sad':
+            target_likelihood_str = likelihood_name[emotions.sorrow_likelihood]
+            is_match = target_likelihood_str in ['POSSIBLE', 'LIKELY', 'VERY_LIKELY']
+
+        elif target_emotion == 'surprised':
+            target_likelihood_str = likelihood_name[emotions.surprise_likelihood]
+            is_match = target_likelihood_str in ['POSSIBLE', 'LIKELY', 'VERY_LIKELY']
+
+        elif target_emotion == 'angry':
+            target_likelihood_str = likelihood_name[emotions.anger_likelihood]
+            is_match = target_likelihood_str in ['POSSIBLE', 'LIKELY', 'VERY_LIKELY']
+        
+        return Response({
+            "detected_emotion": target_emotion,
+            "target_emotion" : target_emotion,
+            "is_match": is_match,
+            "response_time_ms" : response_time_ms,
+            "target_likelihood": target_likelihood_str
+        }, status=status.HTTP_200_OK)

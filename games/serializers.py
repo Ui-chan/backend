@@ -1,29 +1,27 @@
 from rest_framework import serializers
-from .models import GameSession, GameInteractionLog
+from .models import GameSession, GameInteractionLog, FirstGameQuiz
 
 # 모든 게임이 공통으로 사용할 세션 및 로그 생성 Serializer
 class GameSessionCreateSerializer(serializers.ModelSerializer):
-    """게임 세션 생성을 위한 공용 Serializer"""
     class Meta:
         model = GameSession
-        fields = ['session_id', 'user_id', 'game_id', 'session_start_time']
-        read_only_fields = ['session_id', 'session_start_time']
+        fields = ['user_id', 'game_id']
 
 class GameInteractionLogSerializer(serializers.ModelSerializer):
-    """게임 상호작용 기록을 위한 공용 Serializer"""
     class Meta:
         model = GameInteractionLog
-        fields = ['log_id', 'session_id', 'is_successful', 'response_time_ms', 'interaction_data', 'timestamp']
-        read_only_fields = ['log_id', 'timestamp']
+        fields = '__all__'
 
 # --- 각 게임별 종료 Serializer ---
 # 게임마다 포인트 변수명이 다르므로 별도로 정의합니다.
 
 class FirstGameEndSessionSerializer(serializers.Serializer):
-    """첫 번째 게임 세션 종료 Serializer"""
     session_id = serializers.IntegerField()
-    correct_answers = serializers.IntegerField(min_value=0)
-    assistance_level = serializers.CharField(required=False, allow_blank=True, max_length=20)
+    correct_answers = serializers.IntegerField()
+    assistance_level = serializers.CharField(max_length=20)
+    quiz_ids = serializers.ListField(
+        child=serializers.IntegerField(), required=True # 이제 필수 항목입니다.
+    )
 
 class SecondGameEndSessionSerializer(serializers.Serializer):
     """두 번째 게임 세션 종료 Serializer"""
@@ -43,3 +41,17 @@ class FourthGameEndSessionSerializer(serializers.Serializer):
     session_id = serializers.IntegerField()
     choices_made = serializers.IntegerField(min_value=0)
     assistance_level = serializers.CharField(required=False, allow_blank=True, max_length=20)
+
+class QuizItemSerializer(serializers.Serializer):
+    """퀴즈에 포함될 각 보기 아이템의 형식을 정의합니다."""
+    name = serializers.CharField()
+    image_url = serializers.URLField()
+
+class QuizGenerationRequestSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+
+class FirstGameQuizSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FirstGameQuiz
+        # --- 핵심 수정: quiz_id 필드 추가 ---
+        fields = ['quiz_id', 'prompt_text', 'items', 'correct_answer']

@@ -71,3 +71,12 @@ class ChecklistResultSerializer(serializers.ModelSerializer):
 
 class HistoryRequestSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
+
+class DetectEmotionSerializer(serializers.Serializer):
+    """DetectEmotionView를 위한 Serializer"""
+    image = serializers.CharField()
+    target_emotion = serializers.CharField()
+    
+    # --- MODIFICATION: response_time_ms 필드 추가 ---
+    # 반응 시간(ms)을 입력받으며, 0 이상의 정수여야 합니다.
+    response_time_ms = serializers.IntegerField(min_value=0)

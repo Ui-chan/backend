@@ -14,4 +14,9 @@ urlpatterns = [
     path('second-game/session/end/', EndSecondGameSessionView.as_view()),
     path('third-game/session/end/', EndThirdGameSessionView.as_view()),
     path('fourth-game/session/end/', EndFourthGameSessionView.as_view()), # 새로 추가
+
+    path('firstgame/get-quizzes/', GetReadyQuizzesView.as_view()),
+    path('firstgame/trigger-generation/', TriggerQuizGenerationView.as_view()),
+    path('firstgame/delete-latest-quizzes/', DeleteLatestQuizzesView.as_view()), # 새로 추가
+    path('firstgame/get-or-wait-quizzes/', GetOrWaiteQuizzesView.as_view()),
 ]

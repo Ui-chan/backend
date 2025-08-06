@@ -9,4 +9,6 @@ urlpatterns = [
 
     path('user-stats/', ComprehensiveStatsView.as_view()),
 
+    path('detect-emotion/', DetectEmotionView.as_view()),
+
 ]

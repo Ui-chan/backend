@@ -2,8 +2,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import User
-from item.models import Item
 from .serializers import UserSignupSerializer, UserDetailSerializer
+from item.models import Item
+from games.views import create_quiz_set # games.views 에서 함수 import
+import concurrent.futures
+
 
 class UserSignupView(APIView):
     def post(self, request):
@@ -25,26 +28,6 @@ class UserDetailView(APIView):
 
         serializer = UserDetailSerializer(user)
         return Response(serializer.data)
-
-class UserLoginView(APIView):
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-
-        if not username or not password:
-            return Response({'error': 'username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # --- 이 부분을 수정합니다 ---
-        # .get() 대신 .filter().first()를 사용하여 중복이 있어도 첫 번째 객체를 가져옵니다.
-        user = User.objects.filter(username=username, password=password).first()
-
-        # user가 존재하지 않으면 None이 반환됩니다.
-        if user is None:
-            return Response({'error': 'Invalid username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
-
-        serializer = UserDetailSerializer(user)
-        return Response({'message': 'Login successful', 'user': serializer.data}, status=status.HTTP_200_OK)
-
 
 class UserStampView(APIView):
     """
@@ -118,3 +101,30 @@ class UpdateEquippedItemsView(APIView):
         
         user.save()
         return Response({'message': 'Equipped items updated successfully.'}, status=status.HTTP_200_OK)
+    
+class UserLoginView(APIView):
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        if not username or not password:
+            return Response({'error': 'username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.filter(username=username, password=password).first()
+
+        if user:
+            # 로그인 성공 응답 먼저 보냄
+            serializer = UserDetailSerializer(user)
+            response_data = {'message': 'Login successful', 'user': serializer.data}
+
+            # 백그라운드에서 이미지 포함 퀴즈 세트 생성
+            def background_task():
+                create_quiz_set(user.user_id)  # 예: 이미지 생성 포함
+
+            executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+            executor.submit(background_task)
+            executor.shutdown(wait=False)
+
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Invalid username or password.'}, status=status.HTTP_401_UNAUTHORIZED)
