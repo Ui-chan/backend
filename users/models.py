@@ -14,5 +14,11 @@ class User(models.Model):
     store_background = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+        # --- AI 분석 결과를 저장할 필드 추가 ---
+    game1_analysis = models.JSONField(null=True, blank=True, default=dict)
+    game2_analysis = models.JSONField(null=True, blank=True, default=dict)
+    game3_analysis = models.JSONField(null=True, blank=True, default=dict)
+    
+
     class Meta:
         db_table = 'users'

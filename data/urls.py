@@ -11,4 +11,6 @@ urlpatterns = [
 
     path('detect-emotion/', DetectEmotionView.as_view()),
 
+    path('ai-analysis/generate-and-save/', AnalyzeAndSaveStatsView.as_view()),
+
 ]

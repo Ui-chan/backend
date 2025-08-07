@@ -24,6 +24,7 @@ class Game1StatsSerializer(serializers.Serializer):
     daily_response_time_trend = DailyDataPointSerializer(many=True)
     
     success_rate_by_assistance = AssistanceDataSerializer()
+    
 
 class Game2StatsSerializer(serializers.Serializer):
     today_play_count = serializers.IntegerField()
@@ -34,8 +35,11 @@ class Game2StatsSerializer(serializers.Serializer):
     avg_daily_play_time_seconds = serializers.FloatField()
 
     daily_response_time_trend = DailyDataPointSerializer(many=True)
+    daily_play_time_trend = DailyDataPointSerializer(many=True)  # ✅ 날짜별 플레이 시간 추가
 
     play_time_by_assistance = AssistanceDataSerializer()
+
+
 
 class Game3StatsSerializer(serializers.Serializer):
     today_attempts = serializers.IntegerField()
@@ -50,6 +54,7 @@ class Game3StatsSerializer(serializers.Serializer):
     
     success_rate_by_assistance = AssistanceDataSerializer()
     avg_power_by_assistance = AssistanceDataSerializer()
+    
 
 
 # --- API 요청 및 최종 응답을 위한 Serializer ---
@@ -80,3 +85,10 @@ class DetectEmotionSerializer(serializers.Serializer):
     # --- MODIFICATION: response_time_ms 필드 추가 ---
     # 반응 시간(ms)을 입력받으며, 0 이상의 정수여야 합니다.
     response_time_ms = serializers.IntegerField(min_value=0)
+
+class UserStatsWithAnalysisSerializer(serializers.Serializer):
+    """사용자 통계와 AI 분석 결과를 함께 반환하기 위한 Serializer"""
+    statistics = ComprehensiveStatsSerializer()
+    game1_analysis = serializers.JSONField()
+    game2_analysis = serializers.JSONField()
+    game3_analysis = serializers.JSONField()
