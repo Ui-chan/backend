@@ -28,7 +28,7 @@ class UserSignupSerializer(serializers.ModelSerializer):
         validated_data['base_character_name'] = ['dog']
         validated_data['base_character_img'] = ['https://iccas-zerodose.s3.ap-northeast-2.amazonaws.com/character/dog1/dog_main.png']
 
-        validated_data['base_background_img'] = 'https://iccas-zerodose.s3.ap-northeast-2.amazonaws.com/background/farm/farm_main.png'
+        validated_data['base_background_img'] = 'https://iccas-zerodose.s3.ap-northeast-2.amazonaws.com/background/farm/farm.jpg'
         
         validated_data['store_character'] = ['dog']
         validated_data['store_background'] = ['farm']
