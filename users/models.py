@@ -18,7 +18,7 @@ class User(models.Model):
     game1_analysis = models.JSONField(null=True, blank=True, default=dict)
     game2_analysis = models.JSONField(null=True, blank=True, default=dict)
     game3_analysis = models.JSONField(null=True, blank=True, default=dict)
-    
+
 
     class Meta:
         db_table = 'users'

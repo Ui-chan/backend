@@ -11,6 +11,10 @@ urlpatterns = [
 
     path('detect-emotion/', DetectEmotionView.as_view()),
 
-    path('ai-analysis/generate-and-save/', AnalyzeAndSaveStatsView.as_view()),
+    path('ai-analysis/game1/', AnalyzeGame1StatsView.as_view()),
+    path('ai-analysis/game2/', AnalyzeGame2StatsView.as_view()),
+    path('ai-analysis/game3/', AnalyzeGame3StatsView.as_view()),
+
+    path('rl/game3/difficulty/', Game3RLDifficultyView.as_view(), name='game3-rl-difficulty'),
 
 ]
