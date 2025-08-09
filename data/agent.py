@@ -26,9 +26,9 @@ class QLearningAgent:
 
     def _discretize_state(self, avg_power):
         """ 연속적인 평균 파워 값을 'low', 'mid', 'high' 이산 상태로 변환합니다. """
-        if avg_power < 60:
+        if avg_power < 50:
             return 'low_power'
-        elif 60 <= avg_power < 90:
+        elif 50 <= avg_power < 90:
             return 'mid_power'
         else:
             return 'high_power'

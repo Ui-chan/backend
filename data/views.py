@@ -256,26 +256,39 @@ class BaseAnalyzeGameStatsView(APIView):
             gemini_api_key = os.getenv("GEMINI_API_KEY")
             if not gemini_api_key:
                 raise ValueError("GEMINI_API_KEY is not set in the .env file.")
-            genai.configure(api_key=gemini_api_key)
-
-            model = genai.GenerativeModel('gemini-1.5-pro-latest')
             
             prompt = self.create_analysis_prompt(game_data)
-            response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
             
+            # 백그라운드에서 AI 분석 실행
+            import threading
+            thread = threading.Thread(target=self._run_ai_analysis, args=(user_id, prompt, gemini_api_key))
+            thread.start()
+            
+            # 즉시 응답 반환
+            return Response({
+                "message": f"AI analysis for {self.game_name} for User ID {user_id} has been started in the background."
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def _run_ai_analysis(self, user_id, prompt, gemini_api_key):
+        """백그라운드에서 실행될 AI 분석 메서드"""
+        try:
+            genai.configure(api_key=gemini_api_key)
+            model = genai.GenerativeModel('gemini-1.5-pro-latest')
+            
+            response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
             analysis_result = json.loads(response.text)
 
             user = User.objects.get(user_id=user_id)
             setattr(user, f'{self.game_key}_analysis', analysis_result)
             user.save()
             
-            return Response({
-                "message": f"AI analysis for {self.game_name} for User ID {user_id} was completed and results were saved.",
-                "analysis_result": analysis_result
-            }, status=status.HTTP_200_OK)
-
+            print(f"AI analysis for {self.game_name} for User ID {user_id} completed and saved successfully.")
+            
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            print(f"Error in background AI analysis for User ID {user_id}: {e}")
 
 class AnalyzeGame1StatsView(BaseAnalyzeGameStatsView):
     game_key = 'game1'
