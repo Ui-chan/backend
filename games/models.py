@@ -25,6 +25,7 @@ class GameInteractionLog(models.Model):
     is_successful = models.BooleanField()
     response_time_ms = models.IntegerField(null=True, blank=True)
     interaction_data = models.JSONField()
+    game_type = models.IntegerField(default=0)  # 새로 추가된 필드
 
     class Meta:
         db_table = 'game_interaction_log'
