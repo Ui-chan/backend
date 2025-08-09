@@ -67,7 +67,7 @@ def create_quiz_set(user_id):
             prompts_to_generate.extend(quiz_data["wrong_prompts"])
 
         image_urls = []
-        with concurrent.futures.ThreadPoolExecutor(max_workers=9) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
             results = executor.map(generate_image_with_vertex_ai, prompts_to_generate)
             image_urls = list(results)
         
