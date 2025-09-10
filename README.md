@@ -44,7 +44,7 @@
     </tr>
     <tr align="center">
       <td><a href="https://github.com/Ui-chan">PM / FE / BE</a></td>
-      <td><a href="https://github.com/KangSY01">BE</a></td>
+      <td><a href="https://github.com/KangSY01">BE / 디자인</a></td>
       <td><a href="https://github.com/possibilitas">FE</a></td>
       <td><a href="https://github.com/GANG701">FE</a></td>
     </tr>
